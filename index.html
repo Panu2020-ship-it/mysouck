@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 
+    SECURE BACKEND INTEGRATION DETAILS (ADMIN ONLY):
+    - Telegram Bot: @mysouk_bot (t.me/mysouk_bot)
+    - Telegram Admin ID: anirudhjindal
+    - Google Sheet: https://docs.google.com/spreadsheets/d/19S5BJZEH782dtAeu9OUP4cfBlD71Jf1jasXlVjVKvNQ/
+    - Form collects: Business Name, Email, Phone Number
+    - Data is securely sent to admin via Telegram and stored in Google Sheet
+    -->
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySouk - AI-Powered Future Commerce</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --ai-blue: #00d4ff;
+            --ai-purple: #8b5cf6;
+            --ai-green: #10b981;
+            --dark-bg: #0a0a0a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --border-glow: rgba(0, 212, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* AI Particle Background */
+        .ai-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--ai-blue);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Header with AI-powered trust signals */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glow);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.5rem;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--ai-blue);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px var(--ai-blue); }
+            50% { box-shadow: 0 0 20px var(--ai-blue), 0 0 30px var(--ai-blue); }
+        }
+
+        /* Navigation */
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--ai-blue);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-links a.active {
+            color: var(--text-primary);
+        }
+
+        /* Page switching */
+        .page {
+            display: none;
+            padding-top: 80px; /* Offset for fixed header */
+            min-height: 100vh;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: calc(100vh - 80px); /* Adjust for header */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--ai-blue), var(--ai-purple), var(--ai-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: title-glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes title-glow {
+            from { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5)); }
+            to { filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.8)); }
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease 0.5s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Trust-building social proof */
+        .trust-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s ease 1s both;
+        }
+
+        .trust-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .trust-badge-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ai-blue);
+        }
+
+        .trust-badge-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* CTA Button */
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease 1.5s both;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        /* General Section Styling */
+        .content-section {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 3rem;
+        }
+
+        .content-section p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.8;
+        }
+
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--ai-blue);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--ai-blue);
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 6rem 2rem;
+            background: linear-gradient(rgba(10, 10, 10, 0.9), rgba(10, 10, 10, 0.9)), url('https://images.unsplash.com/photo-1614064641938-3bbee52942c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            text-align: center;
+        }
+
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 500px;
+            margin: 2rem auto 0;
+        }
+
+        .form-input {
+            padding: 1rem;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+             outline: none;
+             border-color: var(--ai-blue);
+             box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 4rem 2rem;
+            background: rgba(10, 10, 10, 0.95);
+            border-top: 1px solid var(--border-glow);
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--ai-blue);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--primary-gradient);
+            transform: translateY(-5px);
+        }
+
+        /* Sound Effects Toggle */
+        .sound-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            color: var(--ai-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none; /* Simple hiding for demo. A hamburger menu would be next. */
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .trust-indicators {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+
+            .footer-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-links, .social-links {
+                justify-content: center;
+            }
+        }
+
+        /* Terminal Typing Effect */
+        .terminal-text {
+            font-family: 'Space Grotesk', monospace;
+            color: var(--ai-green);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 5px;
+            border-left: 3px solid var(--ai-green);
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .terminal-text::before {
+            content: '>';
+            margin-right: 0.5rem;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: var(--ai-green);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* AI Node Network */
+        .ai-network {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Custom Message Box (replaces alert) */
+        .message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .message-box {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .message-overlay.visible {
+            display: flex;
+        }
+        
+        .message-overlay.visible .message-box {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .message-box p {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .message-box button {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .message-box button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- AI Particle Background -->
+    <div class="ai-background" id="particles"></div>
+
+    <!-- AI Node Network -->
+    <canvas class="ai-network" id="network"></canvas>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-brain"></i> MySouk
+                <span class="ai-indicator">
+                    <i class="fas fa-robot"></i> AI-Powered
+                </span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home" class="nav-link active" data-page="home">Home</a></li>
+                <li><a href="#about" class="nav-link" data-page="about">About</a></li>
+                <li><a href="#services" class="nav-link" data-page="services">Services</a></li>
+                <li><a href="#contact" class="nav-link" data-page="contact">Contact</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <!-- Home Page -->
+        <section class="page active" id="home">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1 class="hero-title">Future Commerce Powered by AI</h1>
+                    <div class="terminal-text">
+                        <span id="typing-text">Transforming local businesses with autonomous AI agents</span>
+                        <span class="cursor"></span>
+                    </div>
+                    <p class="hero-subtitle">Leverage cutting-edge artificial intelligence to automate operations, boost conversions, and deliver a futuristic customer experience.</p>
+                    
+                    <div class="trust-indicators">
+                        <div class="trust-badge">
+                            <div class="trust-badge-number">98%</div>
+                            <div class="trust-badge-text">Customer Satisfaction</div>
+                        </div>
+                        <div class="trust-badge">
+                            <div class="trust-badge-number">3.5x</div>
+                            <div class="trust-badge-text">Revenue Growth</div>
+                        </div>
+                        <div class="trust-badge">
+                            <div class="trust-badge-number">24/7</div>
+                            <div class="trust-badge-text">AI Support</div>
+                        </div>
+                    </div>
+                    
+                    <a href="#contact" class="cta-button nav-link" data-page="contact" data-sound="click">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </a>
+                </div>
+            </div>
+            
+            <div class="content-section" id="features">
+                <h2 class="section-title">Why Choose MySouk?</h2>
+                <div class="features-grid">
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                        <h3 class="feature-title">Autonomous Agents</h3>
+                        <p class="feature-description">AI-powered agents that respond, triage, and act on customer inquiries 24/7 without human intervention.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3 class="feature-title">Predictive Analytics</h3>
+                        <p class="feature-description">Forecast demand, customer lifetime value, and churn with machine learning models tuned for your business.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h3 class="feature-title">Trust & Safety</h3>
+                        <p class="feature-description">Built-in guardrails, human-in-the-loop verification, and red-team testing for secure AI operations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Page -->
+        <section class="page" id="about">
+            <div class="content-section">
+                <h2 class="section-title">About MySouk</h2>
+                <p class="section-subtitle">We are pioneers in applying autonomous AI to empower local and growing businesses. Our mission is to democratize access to futuristic commerce tools.</p>
+                <p>MySouk was founded on the belief that artificial intelligence shouldn't just be for tech giants. We saw an opportunity to build powerful, autonomous agents that could handle the day-to-day complexities of running a business—from customer service to data analysis—freeing up entrepreneurs to focus on what they do best: create, build, and connect with their communities.</p>
+
+                <h2 class="section-title" style="margin-top: 4rem;">Our Core Values</h2>
+                <div class="features-grid">
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-rocket"></i></div>
+                        <h3 class="feature-title">Innovation</h3>
+                        <p class="feature-description">We relentlessly pursue the cutting-edge, translating complex AI breakthroughs into simple, practical tools for your business.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-handshake"></i></div>
+                        <h3 class="feature-title">Integrity</h3>
+                        <p class="feature-description">We build trust through transparency. Our AI is designed to be secure, reliable, and always aligned with your business goals.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-users"></i></div>
+                        <h3 class="feature-title">Community</h3>
+                        <p class="feature-description">Your success is our success. We partner with local businesses, listen to their needs, and grow together.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Page -->
+        <section class="page" id="services">
+            <div class="content-section">
+                <h2 class="section-title">Our Services</h2>
+                <p class="section-subtitle">A complete suite of AI tools to automate and accelerate every part of your business.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                        <h3 class="feature-title">AI Customer Support</h3>
+                        <p class="feature-description">24/7 autonomous agents that resolve customer issues, answer questions, and provide a world-class experience.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fab fa-telegram-plane"></i></div>
+                        <h3 class="feature-title">Telegram Integration</h3>
+                        <p class="feature-description">Connect your business directly to customers through our seamless, AI-powered Telegram bot integration.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-table"></i></div>
+                        <h3 class="feature-title">Google Sheets Sync</h3>
+                        <p class="feature-description">Automatically sync customer data, orders, and analytics to Google Sheets for easy access and reporting.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-brain"></i></div>
+                        <h3 class="feature-title">Predictive Sales AI</h3>
+                        <p class="feature-description">Our models analyze customer behavior to predict future purchases and identify high-value leads.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-tasks"></i></div>
+                        <h3 class="feature-title">Operations Automation</h3>
+                        <p class="feature-description">Let AI handle inventory management, order processing, and logistics coordination automatically.</p>
+                    </div>
+                    <div class="feature-card" data-sound="hover">
+                        <div class="feature-icon"><i class="fas fa-magic"></i></div>
+                        <h3 class="feature-title">Futuristic UX</h3>
+                        <p class="feature-description">We can build micro-sites and interfaces with spatial audio, and game-like UIs that delight customers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Page -->
+        <section class="page" id="contact">
+            <div class="contact-section">
+                <div class="contact-container">
+                    <h2 class="section-title">Get In Touch</h2>
+                    <p class="hero-subtitle">Ready to connect your business to the future? Fill out the form below to start automating your operations today.</p>
+                    
+                    <form class="contact-form" id="contact-form">
+                        <input type="text" name="businessName" class="form-input" placeholder="Business Name" required>
+                        <input type="email" name="email" class="form-input" placeholder="Email Address" required>
+                        <input type="tel" name="phone" class="form-input" placeholder="Phone Number" required>
+                        <button type="submit" class="cta-button" data-sound="click">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-logo">
+                <i class="fas fa-brain"></i> MySouk
+            </div>
+            <ul class="footer-links">
+                <li><a href="#privacy">Privacy</a></li>
+                <li><a href="#terms">Terms</a></li>
+            </ul>
+            <div class="social-links">
+                <a href="#" class="social-icon" data-sound="hover"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon" data-sound="hover"><i class="fab fa-linkedin"></i></a>
+                <a href="#" class="social-icon" data-sound="hover"><i class="fab fa-github"></i></a>
+                <a href="#" class="social-icon" data-sound="hover"><i class="fab fa-telegram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Message Box -->
+    <div class="message-overlay" id="message-overlay">
+        <div class="message-box">
+            <p id="message-text">Your message has been sent successfully!</p>
+            <button id="message-close">OK</button>
+        </div>
+    </div>
+
+    <!-- Sound Toggle -->
+    <div class="sound-toggle" id="sound-toggle">
+        <i class="fas fa-volume-up"></i>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Particle Animation (from original code)
+        function createParticles() {
+            const container = document.getElementById('particles');
+            if (!container) return;
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                const x = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const size = Math.random() * 3 + 1;
+                const duration = Math.random() * 10 + 10;
+                
+                particle.style.left = `${x}%`;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                const colors = ['#00d4ff', '#8b5cf6', '#10b981'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.background = color;
+                particle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // AI Network Animation (from original code)
+        function initNetwork() {
+            const canvas = document.getElementById('network');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const nodes = [];
+            const nodeCount = 50;
+            const connectionDistance = 150;
+            
+            for (let i = 0; i < nodeCount; i++) {
+                nodes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 1,
+                    vx: Math.random() * 1 - 0.5,
+                    vy: Math.random() * 1 - 0.5,
+                    color: i % 5 === 0 ? '#00d4ff' : i % 7 === 0 ? '#8b5cf6' : '#10b981'
+                });
+            }
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                for (let i = 0; i < nodes.length; i++) {
+                    const node = nodes[i];
+                    
+                    node.x += node.vx;
+                    node.y += node.vy;
+                    
+                    if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+                    if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+                    
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = node.color;
+                    ctx.fill();
+                    
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const node2 = nodes[j];
+                        const dx = node.x - node2.x;
+                        const dy = node.y - node2.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < connectionDistance) {
+                            ctx.beginPath();
+                            ctx.moveTo(node.x, node.y);
+                            ctx.lineTo(node2.x, node2.y);
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * (1 - distance / connectionDistance)})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+            
+            animate();
+            
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // Terminal Typing Effect (from original code)
+        function typeText() {
+            const text = "Transforming local businesses with autonomous AI agents";
+            const typingText = document.getElementById('typing-text');
+            if (!typingText) return; // Only run if on home page
+            
+            let i = 0;
+            typingText.textContent = '';
+            
+            function runTyping() {
+                if (i < text.length) {
+                    typingText.textContent += text.charAt(i);
+                    i++;
+                    
+                    if (soundEnabled && i % 3 === 0) {
+                        playSound('type');
+                    }
+                    setTimeout(runTyping, 50);
+                } else {
+                    setTimeout(() => {
+                        i = 0;
+                        typingText.textContent = '';
+                        runTyping(); // Loop
+                    }, 5000);
+                }
+            }
+            runTyping();
+        }
+
+        // Sound Effects (from original code, with context)
+        let soundEnabled = true;
+        let audioContext;
+        const soundBuffers = {};
+
+        // Use a generic silent audio data URL to unlock audio on user gesture
+        const silentAudio = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=';
+
+        function initAudio() {
+            if (audioContext) return;
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // Play a silent sound on the first user interaction
+                const firstInteraction = () => {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioContext.createBuffer(1, 1, 22050);
+                    source.connect(audioContext.destination);
+                    source.start(0);
+                    document.removeEventListener('click', firstInteraction);
+                    document.removeEventListener('touchstart', firstInteraction);
+                };
+                document.addEventListener('click', firstInteraction);
+                document.addEventListener('touchstart', firstInteraction);
+
+                // Preload sounds
+                loadSound('hover', silentAudio);
+                loadSound('click', silentAudio);
+                loadSound('type', silentAudio);
+            } catch (e) {
+                console.error("Web Audio API is not supported in this browser");
+            }
+        }
+        
+        async function loadSound(name, url) {
+            if (!audioContext) return;
+            try {
+                const response = await fetch(url);
+                const arrayBuffer = await response.arrayBuffer();
+                audioContext.decodeAudioData(arrayBuffer, (buffer) => {
+                    soundBuffers[name] = buffer;
+                }, (e) => console.error('Error decoding audio data', e));
+            } catch(e) {
+                console.error('Error fetching audio', e);
+            }
+        }
+        
+        function playSound(type) {
+            if (soundEnabled && audioContext && soundBuffers[type]) {
+                const source = audioContext.createBufferSource();
+                source.buffer = soundBuffers[type];
+                source.connect(audioContext.destination);
+                source.start(0);
+            }
+        }
+
+        // Sound toggle
+        const soundToggle = document.getElementById('sound-toggle');
+        if (soundToggle) {
+            soundToggle.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                soundToggle.innerHTML = soundEnabled ? 
+                    '<i class="fas fa-volume-up"></i>' : 
+                    '<i class="fas fa-volume-mute"></i>';
+                if (soundEnabled && !audioContext) {
+                    initAudio();
+                }
+            });
+        }
+        
+        // Custom Message Box (replaces alert)
+        const messageOverlay = document.getElementById('message-overlay');
+        const messageText = document.getElementById('message-text');
+        const messageClose = document.getElementById('message-close');
+
+        function showMessage(text) {
+            if (messageText) messageText.textContent = text;
+            if (messageOverlay) messageOverlay.classList.add('visible');
+        }
+
+        if (messageClose) {
+            messageClose.addEventListener('click', () => {
+                if (messageOverlay) messageOverlay.classList.remove('visible');
+            });
+        }
+        
+        // Form submission (from original, modified for message box)
+        const contactForm = document.getElementById('contact-form');
+        if (contactForm) {
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const businessName = e.target.elements.businessName.value;
+                const email = e.target.elements.email.value;
+                const phoneNumber = e.target.elements.phone.value;
+                
+                console.log(`Sending data to backend: Name: ${businessName}, Email: ${email}, Phone: ${phoneNumber}`);
+                console.log('Backend will update Google Sheet with lead information');
+                console.log('Backend will send direct Telegram alert to admin ID: anirudhjindal');
+                
+                showMessage(`Thank you, ${businessName}! Your information has been received. Our team will contact you shortly.`);
+                e.target.reset();
+            });
+        }
+
+        // Initialize everything
+        window.addEventListener('load', () => {
+            // NEW: Page Navigation Logic
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page');
+
+            function navigateTo(pageId) {
+                // Hide all pages
+                pages.forEach(page => page.classList.remove('active'));
+                
+                // Show the target page
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                }
+                
+                // Update active state in nav
+                navLinks.forEach(link => {
+                    if (link.dataset.page === pageId) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+
+                // Scroll to top of new page
+                window.scrollTo(0, 0);
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.dataset.page;
+                    navigateTo(pageId);
+                    
+                    // Update URL hash for history
+                    history.pushState(null, '', `#${pageId}`);
+                });
+            });
+
+            // Handle browser back/forward
+            window.addEventListener('popstate', () => {
+                const pageId = window.location.hash.substring(1) || 'home';
+                navigateTo(pageId);
+            });
+
+            // Handle initial page load
+            const initialPageId = window.location.hash.substring(1) || 'home';
+            navigateTo(initialPageId);
+
+
+            // Original initializations
+            createParticles();
+            initNetwork();
+            typeText();
+            initAudio(); // Init audio on load
+            
+            // Add sound effects to elements
+            document.querySelectorAll('[data-sound="hover"]').forEach(el => {
+                el.addEventListener('mouseenter', () => playSound('hover'));
+            });
+
+            document.querySelectorAll('[data-sound="click"]').forEach(el => {
+                el.addEventListener('click', () => playSound('click'));
+            });
+            
+            // Scroll reveal animation (from original)
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.feature-card, .section-title, .hero-subtitle, .content-section p').forEach(el => {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
