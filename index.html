@@ -1,1160 +1,1307 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- 
-    SECURE BACKEND INTEGRATION DETAILS (ADMIN ONLY):
-    - Telegram Bot: @mysouk_bot (t.me/mysouk_bot)
-    - Telegram Admin ID: anirudhjindal
-    - Google Sheet: https://docs.google.com/spreadsheets/d/19S5BJZEH782dtAeu9OUP4cfBlD71Jf1jasXlVjVKvNQ/
-    - Form collects: Business Name, Email, Phone Number
-    - Data is securely sent to admin via Telegram and stored in Google Sheet
-    -->
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// --- INLINE SVG ICONS (Replaces lucide-react) ---
+
+const IconChevronDown = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
+const IconMenu = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+);
+
+const IconX = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
+const IconArrowRight = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <polyline points="12 5 19 12 12 19"></polyline>
+  </svg>
+);
+
+const IconSearch = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+);
+
+const IconFilter = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+  </svg>
+);
+
+const IconLinkedin = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+    <rect x="2" y="9" width="4" height="12"></rect>
+    <circle cx="4" cy="4" r="2"></circle>
+  </svg>
+);
+
+const IconInstagram = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+  </svg>
+);
+
+const IconGithub = ({ size = 24, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+  </svg>
+);
+
+
+// --- MOCK CMS DATA ---
+// Based on your brief's data model specifications
+
+const MOCK_CASE_STUDIES = [
+  {
+    id: 'ai-powered-ecommerce',
+    client: 'The Local Weaver',
+    title: 'AI-Powered E-commerce Automation',
+    tags: ['E-commerce', 'AI Agents', 'India'],
+    coverImage: 'https://placehold.co/600x400/1a1a2e/e0e0e0?text=The+Local+Weaver',
+    summary: '+32% conversion lift',
+    year: 2024,
+    services: ['ai-customer-support', 'operations-automation'],
+    industry: 'retail',
+  },
+  {
+    id: 'predictive-sales-ai',
+    client: 'Jaipur Gems',
+    title: 'Predictive Sales AI for High-Value Retail',
+    tags: ['Retail', 'Predictive AI', 'Global'],
+    coverImage: 'https://placehold.co/600x400/2a2a3e/e0e0e0?text=Jaipur+Gems',
+    summary: '+25% AOV',
+    year: 2024,
+    services: ['predictive-sales-ai'],
+    industry: 'luxury-goods',
+  },
+  {
+    id: 'whatsapp-commerce-sync',
+    client: 'Daily Harvest Grocers',
+    title: 'WhatsApp Commerce & POS Synchronization',
+    tags: ['Grocery', 'WhatsApp', 'India'],
+    coverImage: 'https://placehold.co/600x400/3a3a4e/e0e0e0?text=Daily+Harvest',
+    summary: '98% order accuracy',
+    year: 2023,
+    services: ['telegram-whatsapp-commerce', 'google-sheets-pos-sync'],
+    industry: 'grocery',
+  },
+  {
+    id: 'local-seo-automation',
+    client: 'Bistro Meals',
+    title: 'Local SEO & Performance Media Automation',
+    tags: ['Food & Beverage', 'SEO', 'India'],
+    coverImage: 'https://placehold.co/600x400/1a1a2e/e0e0e0?text=Bistro+Meals',
+    summary: '3.5x ROAS',
+    year: 2023,
+    services: ['local-seo-performance-media'],
+    industry: 'hospitality',
+  },
+    {
+    id: 'automated-support-system',
+    client: 'CraftsIndia',
+    title: '24/7 AI Support Agent Implementation',
+    tags: ['E-commerce', 'AI Agents', 'India'],
+    coverImage: 'https://placehold.co/600x400/2a2a3e/e0e0e0?text=CraftsIndia',
+    summary: '95% CSAT score',
+    year: 2024,
+    services: ['ai-customer-support'],
+    industry: 'retail',
+  },
+  {
+    id: 'inventory-automation',
+    client: 'AutoParts Ltd.',
+    title: 'Real-time Inventory & Operations Automation',
+    tags: ['Automotive', 'Automation', 'India'],
+    coverImage: 'https://placehold.co/600x400/3a3a4e/e0e0e0?text=AutoParts+Ltd.',
+    summary: '40% reduction in stockouts',
+    year: 2023,
+    services: ['operations-automation', 'google-sheets-pos-sync'],
+    industry: 'automotive',
+  },
+];
+
+const MOCK_SERVICES_MENU = {
+  'marketing-communications': {
+    name: 'Marketing + Communications',
+    items: [
+      { name: 'Brand Strategy', slug: '/services/brand-strategy' },
+      { name: 'Advertising & Content', slug: '/services/advertising-content' },
+      { name: 'Social & Creator', slug: '/services/social-creator' },
+      { name: 'PR & Reputation', slug: '/services/pr-reputation' },
+      { name: 'Experiential', slug: '/services/experiential' },
+      { name: 'Branding & Design', slug: '/services/branding-design' },
+      { name: 'Production', slug: '/services/production' },
+    ],
+  },
+  'experience-technology': {
+    name: 'Experience, Technology + Consulting',
+    items: [
+      { name: 'Audience & Insights', slug: '/services/audience-insights' },
+      { name: 'Data & Measurement', slug: '/services/data-measurement' },
+      { name: 'Growth & Innovation', slug: '/services/growth-innovation' },
+      { name: 'UX/CX/CRM/Loyalty', slug: '/services/ux-cx-crm' },
+    ],
+  },
+  'media-sponsorship': {
+    name: 'Media + Sponsorship',
+    items: [
+      { name: 'Performance & Retail Media', slug: '/services/performance-media' },
+      { name: 'Sponsorships & Rights', slug: '/services/sponsorships' },
+    ],
+  },
+  'specialist': {
+    name: 'Specialist',
+    items: [
+      { name: 'Talent', slug: '/services/talent' },
+      { name: 'Sport & Entertainment', slug: '/services/sport-entertainment' },
+      { name: 'Global & Social Issues', slug: '/services/social-issues' },
+    ],
+  },
+};
+
+const MOCK_FILTERS = {
+  industry: [
+    { value: 'all', label: 'All Industries' },
+    { value: 'retail', label: 'Retail' },
+    { value: 'luxury-goods', label: 'Luxury Goods' },
+    { value: 'grocery', label: 'Grocery' },
+    { value: 'hospitality', label: 'Hospitality' },
+    { value: 'automotive', label: 'Automotive' },
+  ],
+  services: [
+    { value: 'all', label: 'All Services' },
+    { value: 'ai-customer-support', label: 'AI Customer Support' },
+    { value: 'operations-automation', label: 'Operations Automation' },
+    { value: 'predictive-sales-ai', label: 'Predictive Sales AI' },
+    { value: 'telegram-whatsapp-commerce', label: 'WhatsApp Commerce' },
+    { value: 'google-sheets-pos-sync', label: 'POS Sync' },
+    { value: 'local-seo-performance-media', label: 'Local SEO' },
+  ],
+  year: [
+    { value: 'all', label: 'All Years' },
+    { value: '2024', label: '2024' },
+    { value: '2023', label: '2023' },
+  ],
+};
+
+// --- 1. PARTICLE BACKGROUND ---
+// Re-implementing the particle network background
+
+const ParticleBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return; // Add guard clause
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return; // Add guard clause
+
+    let particles = [];
+    let animationFrameId; // To store the animation frame ID
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
+        this.color = 'rgba(0, 255, 150, 0.5)'; // AI Green
+      }
+      update() {
+        if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+        if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+        this.x += this.speedX;
+        this.y += this.speedY;
+      }
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function init() {
+      particles = [];
+      let numberOfParticles = (canvas.width * canvas.height) / 9000;
+      for (let i = 0; i < numberOfParticles; i++) {
+        let x = Math.random() * canvas.width;
+        let y = Math.random() * canvas.height;
+        particles.push(new Particle(x, y));
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+      connect();
+      animationFrameId = requestAnimationFrame(animate); // Store frame ID
+    }
+
+    function connect() {
+      let opacityValue = 1;
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          let distance =
+            (particles[a].x - particles[b].x) * (particles[a].x - particles[b].x) +
+            (particles[a].y - particles[b].y) * (particles[a].y - particles[b].y);
+          if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+            opacityValue = 1 - distance / 20000;
+            // Gradient line: Blue -> Purple -> Green
+            let gradient = ctx.createLinearGradient(particles[a].x, particles[a].y, particles[b].x, particles[b].y);
+            gradient.addColorStop(0, `rgba(0, 150, 255, ${opacityValue * 0.2})`); // AI Blue
+            gradient.addColorStop(0.5, `rgba(150, 0, 255, ${opacityValue * 0.2})`); // AI Purple
+            gradient.addColorStop(1, `rgba(0, 255, 150, ${opacityValue * 0.2})`); // AI Green
+            
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
     
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MySouk - AI-Powered Future Commerce</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --ai-blue: #00d4ff;
-            --ai-purple: #8b5cf6;
-            --ai-green: #10b981;
-            --dark-bg: #0a0a0a;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
-            --border-glow: rgba(0, 212, 255, 0.3);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark-bg);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        /* AI Particle Background */
-        .ai-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--ai-blue);
-            border-radius: 50%;
-            animation: float 6s infinite linear;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-10px) rotate(360deg); opacity: 0; }
-        }
-
-        /* Header with AI-powered trust signals */
-        .header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 1rem 2rem;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-glow);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .logo {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .ai-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0.2rem 0.5rem;
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid var(--ai-blue);
-            border-radius: 20px;
-            font-size: 0.7rem;
-            animation: pulse-glow 2s infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 5px var(--ai-blue); }
-            50% { box-shadow: 0 0 20px var(--ai-blue), 0 0 30px var(--ai-blue); }
-        }
-
-        /* Navigation */
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-            padding: 0.5rem 0;
-            cursor: pointer;
-        }
-
-        .nav-links a:hover {
-            color: var(--text-primary);
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--ai-blue);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after,
-        .nav-links a.active::after {
-            width: 100%;
-        }
-
-        .nav-links a.active {
-            color: var(--text-primary);
-        }
-
-        /* Page switching */
-        .page {
-            display: none;
-            padding-top: 80px; /* Offset for fixed header */
-            min-height: 100vh;
-            animation: fadeIn 0.6s ease;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: calc(100vh - 80px); /* Adjust for header */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2rem;
-            position: relative;
-        }
-
-        .hero-content {
-            max-width: 800px;
-            z-index: 2;
-        }
-
-        .hero-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--ai-blue), var(--ai-purple), var(--ai-green));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: title-glow 3s ease-in-out infinite alternate;
-        }
-
-        @keyframes title-glow {
-            from { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5)); }
-            to { filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.8)); }
-        }
-
-        .hero-subtitle {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-            animation: fadeInUp 1s ease 0.5s both;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Trust-building social proof */
-        .trust-indicators {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin: 2rem 0;
-            flex-wrap: wrap;
-            animation: fadeInUp 1s ease 1s both;
-        }
-
-        .trust-badge {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .trust-badge-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--ai-blue);
-        }
-
-        .trust-badge-text {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        /* CTA Button */
-        .cta-button {
-            display: inline-block;
-            padding: 1rem 2rem;
-            background: var(--primary-gradient);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: 600;
-            text-decoration: none;
-            margin-top: 2rem;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            animation: fadeInUp 1s ease 1.5s both;
-            cursor: pointer;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .cta-button::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        /* General Section Styling */
-        .content-section {
-            padding: 6rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 3rem;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .section-subtitle {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto 3rem;
-        }
-
-        .content-section p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            max-width: 800px;
-            margin: 0 auto 2rem;
-            line-height: 1.8;
-        }
-
-        /* Features Section */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .feature-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--ai-blue);
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s ease;
-        }
-
-        .feature-card:hover::before {
-            transform: translateX(100%);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: var(--ai-blue);
-        }
-
-        .feature-title {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .feature-description {
-            color: var(--text-secondary);
-        }
-
-        /* Contact Section */
-        .contact-section {
-            padding: 6rem 2rem;
-            background: linear-gradient(rgba(10, 10, 10, 0.9), rgba(10, 10, 10, 0.9)), url('https://images.unsplash.com/photo-1614064641938-3bbee52942c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            text-align: center;
-        }
-
-        .contact-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .contact-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            max-width: 500px;
-            margin: 2rem auto 0;
-        }
-
-        .form-input {
-            padding: 1rem;
-            border-radius: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .form-input:focus {
-             outline: none;
-             border-color: var(--ai-blue);
-             box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-        }
-
-        /* Footer */
-        .footer {
-            padding: 4rem 2rem;
-            background: rgba(10, 10, 10, 0.95);
-            border-top: 1px solid var(--border-glow);
-        }
-
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 2rem;
-        }
-
-        .footer-logo {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 1.5rem;
-            list-style: none;
-        }
-
-        .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--ai-blue);
-        }
-
-        .social-links {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .social-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--card-bg);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
-        .social-icon:hover {
-            background: var(--primary-gradient);
-            transform: translateY(-5px);
-        }
-
-        /* Sound Effects Toggle */
-        .sound-toggle {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--card-bg);
-            border: 1px solid var(--border-glow);
-            color: var(--ai-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            transition: all 0.3s ease;
-        }
-
-        .sound-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none; /* Simple hiding for demo. A hamburger menu would be next. */
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .trust-indicators {
-                flex-direction: column;
-                align-items: center;
-                gap: 1.5rem;
-            }
-
-            .footer-container {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer-links, .social-links {
-                justify-content: center;
-            }
-        }
-
-        /* Terminal Typing Effect */
-        .terminal-text {
-            font-family: 'Space Grotesk', monospace;
-            color: var(--ai-green);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 1rem;
-            border-radius: 5px;
-            border-left: 3px solid var(--ai-green);
-            margin: 2rem 0;
-            position: relative;
-            overflow: hidden;
-            text-align: left;
-        }
-
-        .terminal-text::before {
-            content: '>';
-            margin-right: 0.5rem;
-        }
-
-        .cursor {
-            display: inline-block;
-            width: 10px;
-            height: 20px;
-            background: var(--ai-green);
-            animation: blink 1s infinite;
-            vertical-align: middle;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* AI Node Network */
-        .ai-network {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Custom Message Box (replaces alert) */
-        .message-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-        
-        .message-box {
-            background: var(--dark-bg);
-            border: 1px solid var(--border-glow);
-            border-radius: 10px;
-            padding: 2rem;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
-            transform: scale(0.9);
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .message-overlay.visible {
-            display: flex;
-        }
-        
-        .message-overlay.visible .message-box {
-            transform: scale(1);
-            opacity: 1;
-        }
-
-        .message-box p {
-            font-size: 1.1rem;
-            color: var(--text-primary);
-            margin-bottom: 1.5rem;
-        }
-
-        .message-box button {
-            padding: 0.75rem 1.5rem;
-            background: var(--primary-gradient);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .message-box button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-    </style>
-</head>
-<body>
-    <!-- AI Particle Background -->
-    <div class="ai-background" id="particles"></div>
-
-    <!-- AI Node Network -->
-    <canvas class="ai-network" id="network"></canvas>
-
-    <!-- Header -->
-    <header class="header">
-        <div class="nav-container">
-            <div class="logo">
-                <i class="fas fa-brain"></i> MySouk
-                <span class="ai-indicator">
-                    <i class="fas fa-robot"></i> AI-Powered
-                </span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#home" class="nav-link active" data-page="home">Home</a></li>
-                <li><a href="#about" class="nav-link" data-page="about">About</a></li>
-                <li><a href="#services" class="nav-link" data-page="services">Services</a></li>
-                <li><a href="#contact" class="nav-link" data-page="contact">Contact</a></li>
-            </ul>
-        </div>
-    </header>
-
-    <main>
-        <!-- Home Page -->
-        <section class="page active" id="home">
-            <div class="hero">
-                <div class="hero-content">
-                    <h1 class="hero-title">Future Commerce Powered by AI</h1>
-                    <div class="terminal-text">
-                        <span id="typing-text">Transforming local businesses with autonomous AI agents</span>
-                        <span class="cursor"></span>
-                    </div>
-                    <p class="hero-subtitle">Leverage cutting-edge artificial intelligence to automate operations, boost conversions, and deliver a futuristic customer experience.</p>
-                    
-                    <div class="trust-indicators">
-                        <div class="trust-badge">
-                            <div class="trust-badge-number">98%</div>
-                            <div class="trust-badge-text">Customer Satisfaction</div>
-                        </div>
-                        <div class="trust-badge">
-                            <div class="trust-badge-number">3.5x</div>
-                            <div class="trust-badge-text">Revenue Growth</div>
-                        </div>
-                        <div class="trust-badge">
-                            <div class="trust-badge-number">24/7</div>
-                            <div class="trust-badge-text">AI Support</div>
-                        </div>
-                    </div>
-                    
-                    <a href="#contact" class="cta-button nav-link" data-page="contact" data-sound="click">
-                        <i class="fas fa-rocket"></i> Get Started
+    const handleResize = () => { // Encapsulate resize logic
+      resizeCanvas();
+      init();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    init();
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId); // Clean up animation frame
+    };
+  }, []); // Empty dependency array ensures this runs once on mount
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="fixed top-0 left-0 w-full h-full -z-10 opacity-30" 
+      style={{ opacity: 0.15 }} // Keep it subtle
+    />
+  );
+};
+
+// --- 2. HEADER & NAVIGATION ---
+
+const NavLink = ({ children, href, onClick, onMouseEnter, className = '' }) => (
+  <a
+    href={href}
+    onClick={onClick}
+    onMouseEnter={onMouseEnter}
+    onFocus={onMouseEnter}
+    className={`relative py-2 text-sm font-medium text-gray-300 transition-colors duration-300 hover:text-white group ${className}`}
+  >
+    {children}
+    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 transition-all duration-300 group-hover:w-full"></span>
+  </a>
+);
+
+const MegaMenu = ({ setPage }) => {
+  const stopPropagation = (e) => e.stopPropagation();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+      className="absolute top-full left-0 w-full bg-black/50 backdrop-blur-lg shadow-lg border-t border-gray-800"
+      onClick={stopPropagation}
+      onMouseLeave={stopPropagation} // Prevent accidental close on inner mouse leave
+    >
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {Object.values(MOCK_SERVICES_MENU).map((category) => (
+            <div key={category.name}>
+              <h3 className="font-display font-semibold text-white mb-4">
+                {category.name}
+              </h3>
+              <ul className="space-y-3">
+                {category.items.map((item) => (
+                  <li key={item.name}>
+                    <a
+                      href={item.slug}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(item.slug);
+                      }}
+                      className="relative text-gray-400 hover:text-white transition-colors duration-200 group"
+                    >
+                      {item.name}
+                      <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gradient-to-r from-blue-400 to-green-400 transition-all duration-300 group-hover:w-1/2"></span>
                     </a>
-                </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-            
-            <div class="content-section" id="features">
-                <h2 class="section-title">Why Choose MySouk?</h2>
-                <div class="features-grid">
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-robot"></i></div>
-                        <h3 class="feature-title">Autonomous Agents</h3>
-                        <p class="feature-description">AI-powered agents that respond, triage, and act on customer inquiries 24/7 without human intervention.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                        <h3 class="feature-title">Predictive Analytics</h3>
-                        <p class="feature-description">Forecast demand, customer lifetime value, and churn with machine learning models tuned for your business.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                        <h3 class="feature-title">Trust & Safety</h3>
-                        <p class="feature-description">Built-in guardrails, human-in-the-loop verification, and red-team testing for secure AI operations.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- About Page -->
-        <section class="page" id="about">
-            <div class="content-section">
-                <h2 class="section-title">About MySouk</h2>
-                <p class="section-subtitle">We are pioneers in applying autonomous AI to empower local and growing businesses. Our mission is to democratize access to futuristic commerce tools.</p>
-                <p>MySouk was founded on the belief that artificial intelligence shouldn't just be for tech giants. We saw an opportunity to build powerful, autonomous agents that could handle the day-to-day complexities of running a business—from customer service to data analysis—freeing up entrepreneurs to focus on what they do best: create, build, and connect with their communities.</p>
-
-                <h2 class="section-title" style="margin-top: 4rem;">Our Core Values</h2>
-                <div class="features-grid">
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-rocket"></i></div>
-                        <h3 class="feature-title">Innovation</h3>
-                        <p class="feature-description">We relentlessly pursue the cutting-edge, translating complex AI breakthroughs into simple, practical tools for your business.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-handshake"></i></div>
-                        <h3 class="feature-title">Integrity</h3>
-                        <p class="feature-description">We build trust through transparency. Our AI is designed to be secure, reliable, and always aligned with your business goals.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-users"></i></div>
-                        <h3 class="feature-title">Community</h3>
-                        <p class="feature-description">Your success is our success. We partner with local businesses, listen to their needs, and grow together.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Services Page -->
-        <section class="page" id="services">
-            <div class="content-section">
-                <h2 class="section-title">Our Services</h2>
-                <p class="section-subtitle">A complete suite of AI tools to automate and accelerate every part of your business.</p>
-                
-                <div class="features-grid">
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-comments"></i></div>
-                        <h3 class="feature-title">AI Customer Support</h3>
-                        <p class="feature-description">24/7 autonomous agents that resolve customer issues, answer questions, and provide a world-class experience.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fab fa-telegram-plane"></i></div>
-                        <h3 class="feature-title">Telegram Integration</h3>
-                        <p class="feature-description">Connect your business directly to customers through our seamless, AI-powered Telegram bot integration.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-table"></i></div>
-                        <h3 class="feature-title">Google Sheets Sync</h3>
-                        <p class="feature-description">Automatically sync customer data, orders, and analytics to Google Sheets for easy access and reporting.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-brain"></i></div>
-                        <h3 class="feature-title">Predictive Sales AI</h3>
-                        <p class="feature-description">Our models analyze customer behavior to predict future purchases and identify high-value leads.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-tasks"></i></div>
-                        <h3 class="feature-title">Operations Automation</h3>
-                        <p class="feature-description">Let AI handle inventory management, order processing, and logistics coordination automatically.</p>
-                    </div>
-                    <div class="feature-card" data-sound="hover">
-                        <div class="feature-icon"><i class="fas fa-magic"></i></div>
-                        <h3 class="feature-title">Futuristic UX</h3>
-                        <p class="feature-description">We can build micro-sites and interfaces with spatial audio, and game-like UIs that delight customers.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Page -->
-        <section class="page" id="contact">
-            <div class="contact-section">
-                <div class="contact-container">
-                    <h2 class="section-title">Get In Touch</h2>
-                    <p class="hero-subtitle">Ready to connect your business to the future? Fill out the form below to start automating your operations today.</p>
-                    
-                    <form class="contact-form" id="contact-form">
-                        <input type="text" name="businessName" class="form-input" placeholder="Business Name" required>
-                        <input type="email" name="email" class="form-input" placeholder="Email Address" required>
-                        <input type="tel" name="phone" class="form-input" placeholder="Phone Number" required>
-                        <button type="submit" class="cta-button" data-sound="click">
-                            <i class="fas fa-paper-plane"></i> Send Message
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-logo">
-                <i class="fas fa-brain"></i> MySouk
-            </div>
-            <ul class="footer-links">
-                <li><a href="#privacy">Privacy</a></li>
-                <li><a href="#terms">Terms</a></li>
-            </ul>
-            <div class="social-links">
-                <a href="#" class="social-icon" data-sound="hover"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="social-icon" data-sound="hover"><i class="fab fa-linkedin"></i></a>
-                <a href="#" class="social-icon" data-sound="hover"><i class="fab fa-github"></i></a>
-                <a href="#" class="social-icon" data-sound="hover"><i class="fab fa-telegram"></i></a>
-            </div>
+          ))}
         </div>
+      </div>
+    </motion.div>
+  );
+};
+
+
+const Header = ({ setPage }) => {
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  let megaMenuTimer = useRef(null);
+
+  const handleServicesEnter = () => {
+    clearTimeout(megaMenuTimer.current);
+    setIsMegaMenuOpen(true);
+  };
+
+  const handleServicesLeave = () => {
+    megaMenuTimer.current = setTimeout(() => {
+      setIsMegaMenuOpen(false);
+    }, 200); // 200ms delay to allow moving cursor to menu
+  };
+  
+  const navigate = (e, page) => {
+      e.preventDefault();
+      setPage(page);
+      setIsMobileMenuOpen(false);
+      setIsMegaMenuOpen(false);
+  }
+
+  return (
+    <header 
+      className="fixed top-0 left-0 w-full z-50 bg-black/30 backdrop-blur-md"
+      onMouseLeave={handleServicesLeave} // Close mega menu if mouse leaves header
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <a
+            href="/"
+            onClick={(e) => navigate(e, '/')}
+            className="font-display text-2xl font-bold text-white"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            My Souk
+          </a>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            <NavLink href="/work" onClick={(e) => navigate(e, '/work')}>
+              Work
+            </NavLink>
+            <NavLink href="/about" onClick={(e) => navigate(e, '/about')}>
+              About
+            </NavLink>
+            <div onMouseEnter={handleServicesEnter}>
+              <NavLink
+                href="/services"
+                onClick={(e) => navigate(e, '/services')}
+                className="flex items-center gap-1"
+              >
+                Services <IconChevronDown size={16} />
+              </NavLink>
+            </div>
+            <NavLink href="/thinking" onClick={(e) => navigate(e, '/thinking')}>
+              Thinking
+            </NavLink>
+            <NavLink href="/careers" onClick={(e) => navigate(e, '/careers')}>
+              Careers
+            </NavLink>
+            <a
+              href="/contact"
+              onClick={(e) => navigate(e, '/contact')}
+              className="px-4 py-2 text-sm font-medium text-black bg-white rounded-full hover:bg-gray-200 transition-colors duration-300"
+            >
+              Contact
+            </a>
+          </nav>
+          
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-white"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <IconX size={24} /> : <IconMenu size={24} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mega Menu (Desktop) */}
+      <AnimatePresence>
+        {isMegaMenuOpen && (
+          <div onMouseEnter={handleServicesEnter} onMouseLeave={handleServicesLeave}>
+            <MegaMenu setPage={setPage} />
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Menu (Full screen) */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: "-100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "-100%" }}
+            className="fixed inset-0 bg-gray-950 z-40 md:hidden p-6 pt-20"
+          >
+            <nav className="flex flex-col space-y-6">
+              <a href="/work" onClick={(e) => navigate(e, '/work')} className="text-2xl font-medium text-white">Work</a>
+              <a href="/about" onClick={(e) => navigate(e, '/about')} className="text-2xl font-medium text-white">About</a>
+              <a href="/services" onClick={(e) => navigate(e, '/services')} className="text-2xl font-medium text-white">Services</a>
+              <a href="/thinking" onClick={(e) => navigate(e, '/thinking')} className="text-2xl font-medium text-white">Thinking</a>
+              <a href="/careers" onClick={(e) => navigate(e, '/careers')} className="text-2xl font-medium text-white">Careers</a>
+              <a
+                href="/contact"
+                onClick={(e) => navigate(e, '/contact')}
+                className="mt-4 px-6 py-3 text-lg text-center font-medium text-black bg-white rounded-full"
+              >
+                Contact
+              </a>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+};
+
+
+// --- 3. FOOTER ---
+
+const Footer = ({ setPage }) => {
+  const navigate = (e, page) => {
+    e.preventDefault();
+    setPage(page);
+  };
+
+  const footerLinks = {
+    Company: [
+      { name: 'About', href: '/about' },
+      { name: 'Careers', href: '/careers' },
+      { name: 'Planet+People', href: '/planet-people' },
+    ],
+    Services: [
+      { name: 'AI Customer Support', href: '/services/ai-customer-support' },
+      { name: 'Predictive Sales AI', href: '/services/predictive-sales-ai' },
+      { name: 'Operations Automation', href: '/services/operations-automation' },
+    ],
+    Content: [
+      { name: 'Work', href: '/work' },
+      { name: 'Thinking', href: '/thinking' },
+    ],
+    Connect: [
+      { name: 'Contact', href: '/contact' },
+      { name: 'India', href: '/contact/india' },
+    ],
+  };
+
+  const socialLinks = [
+    { name: 'LinkedIn', href: '#', icon: IconLinkedin },
+    { name: 'Instagram', href: '#', icon: IconInstagram },
+    { name: 'GitHub', href: '#', icon: IconGithub },
+  ];
+
+  return (
+    <footer className="bg-gray-950 text-gray-400 pt-16 pb-8 relative z-10 border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+          {/* Logo & Intro */}
+          <div className="col-span-2 lg:col-span-1">
+             <a
+              href="/"
+              onClick={(e) => navigate(e, '/')}
+              className="font-display text-2xl font-bold text-white mb-4 block"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              My Souk
+            </a>
+            <p className="text-sm">
+              We help SMBs scale online with autonomous AI agents and performance growth loops.
+            </p>
+          </div>
+
+          {/* Links */}
+          {Object.entries(footerLinks).map(([title, links]) => (
+            <div key={title}>
+              <h3 className="font-display text-sm font-semibold text-white tracking-wider uppercase mb-4">
+                {title}
+              </h3>
+              <ul className="space-y-3">
+                {links.map((link) => (
+                  <li key={link.name}>
+                    <a
+                      href={link.href}
+                      onClick={(e) => navigate(e, link.href)}
+                      className="text-sm hover:text-white transition-colors duration-200"
+                    >
+                      {link.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
+          <div className="text-sm">
+            &copy; {new Date().getFullYear()} My Souk. All rights reserved.
+          </div>
+          <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
+            <div className="flex space-x-4">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href}
+                  className="hover:text-white transition-colors"
+                  aria-label={social.name}
+                >
+                  <social.icon size={20} />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </footer>
+  );
+};
 
-    <!-- Custom Message Box -->
-    <div class="message-overlay" id="message-overlay">
-        <div class="message-box">
-            <p id="message-text">Your message has been sent successfully!</p>
-            <button id="message-close">OK</button>
+
+// --- 4. REUSABLE COMPONENTS ---
+
+const CaseCard = ({ caseStudy, setPage }) => {
+  const navigate = (e, page) => {
+    e.preventDefault();
+    setPage(page);
+  };
+  
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
+      className="group relative overflow-hidden rounded-2xl shadow-lg"
+    >
+      <a 
+        href={`/work/${caseStudy.id}`} 
+        onClick={(e) => navigate(e, `/work/${caseStudy.id}`)}
+        className="block"
+      >
+        {/* Image & Parallax Effect */}
+        <div className="overflow-hidden">
+          <motion.img
+            src={caseStudy.coverImage}
+            alt={caseStudy.title}
+            className="w-full h-64 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+            whileHover={{ scale: 1.1 }}
+          />
+        </div>
+        
+        {/* Gradient Overlay on Hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
+        
+        {/* Content */}
+        <div className="absolute inset-0 p-6 flex flex-col justify-end">
+          <div className="transform translate-y-8 group-hover:translate-y-0 transition-all duration-500 ease-in-out">
+            <h3 
+              className="font-display text-lg font-semibold text-white"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              {caseStudy.client}
+            </h3>
+            <h2 className="text-xl font-medium text-white mb-2 line-clamp-2">{caseStudy.title}</h2>
+            
+            {/* Tags (visible) */}
+            <div className="flex flex-wrap gap-2 mb-4 opacity-100 group-hover:opacity-0 transition-opacity duration-300">
+              {caseStudy.tags.slice(0, 2).map(tag => (
+                <span key={tag} className="px-2 py-0.5 bg-white/10 backdrop-blur-sm text-white text-xs font-medium rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            {/* Result (revealed on hover) */}
+            <div className="absolute bottom-6 left-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-green-400">
+                {caseStudy.summary}
+              </p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </motion.div>
+  );
+};
+
+const FilterBar = ({ filters, activeFilters, setFilters }) => {
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const handleFilterChange = (type, value) => {
+    setFilters(prev => ({ ...prev, [type]: value }));
+  };
+
+  const activeFilterCount = Object.values(activeFilters).filter(v => v !== 'all').length;
+
+  return (
+    <div className="sticky top-16 bg-gray-950/80 backdrop-blur-lg z-30 py-4 mb-8">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+          {/* Search Bar */}
+          <div className="relative w-full md:w-auto">
+            <input
+              type="text"
+              placeholder="Search projects..."
+              className="w-full md:w-64 pl-10 pr-4 py-2 rounded-full bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              value={activeFilters.search}
+            />
+            <IconSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          </div>
+
+          {/* Filters */}
+          <div className="hidden md:flex flex-wrap gap-3">
+            {Object.keys(filters).map(key => (
+              <select
+                key={key}
+                name={key}
+                id={key}
+                className="bg-gray-800 border border-gray-700 text-white text-sm rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                onChange={(e) => handleFilterChange(key, e.target.value)}
+                value={activeFilters[key]}
+              >
+                {filters[key].map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            ))}
+          </div>
+
+          {/* Mobile Filter Button */}
+          <button
+            className="md:hidden w-full flex justify-center items-center gap-2 px-4 py-2 rounded-full bg-gray-800 text-white border border-gray-700"
+            onClick={() => setIsFilterOpen(true)}
+          >
+            <IconFilter size={16} />
+            Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+          </button>
+        </div>
+      </div>
+      
+      {/* Mobile Filter Modal */}
+      <AnimatePresence>
+        {isFilterOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-end"
+            onClick={() => setIsFilterOpen(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="w-full bg-gray-900 p-6 rounded-t-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-white">Filters</h3>
+                <button onClick={() => setIsFilterOpen(false)} className="text-white"><IconX size={24} /></button>
+              </div>
+              <div className="space-y-4">
+                {Object.keys(filters).map(key => (
+                  <div key={key}>
+                    <label htmlFor={`mobile-${key}`} className="block text-sm font-medium text-gray-400 mb-2 capitalize">{key}</label>
+                    <select
+                      name={`mobile-${key}`}
+                      id={`mobile-${key}`}
+                      className="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => handleFilterChange(key, e.target.value)}
+                      value={activeFilters[key]}
+                    >
+                      {filters[key].map(option => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+
+// --- 5. PAGES ---
+
+const HomePage = ({ setPage }) => {
+  const navigate = (e, page) => {
+    e.preventDefault();
+    setPage(page);
+  };
+  
+  const trustTiles = [
+    { label: 'Revenue Growth', value: '3.5x' },
+    { label: 'AI Support', value: '24/7' },
+    { label: 'Ops Automation', value: '98%' },
+    { label: 'ROAS', value: '+240%' },
+  ];
+
+  return (
+    <div className="relative min-h-screen flex items-center justify-center text-white overflow-hidden pt-16">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+        {/* Headline */}
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="font-display text-5xl md:text-7xl font-extrabold mb-6" 
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+        >
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-green-400">
+            AI-Powered Commerce
+          </span>
+          <br />
+          for Offline Businesses.
+        </motion.h1>
+
+        {/* Subhead */}
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
+        >
+          We help small & mid-size offline businesses scale online with autonomous AI agents and performance growth loops.
+        </motion.p>
+
+        {/* CTAs */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <a
+            href="/contact"
+            onClick={(e) => navigate(e, '/contact')}
+            className="px-8 py-3 font-semibold text-black bg-white rounded-full text-lg hover:bg-gray-200 transition-colors duration-300"
+          >
+            Let's Talk
+          </a>
+          <a
+            href="/work"
+            onClick={(e) => navigate(e, '/work')}
+            className="group px-8 py-3 font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-lg transition-colors duration-300 hover:bg-white/20"
+          >
+            See Our Work <IconArrowRight size={20} className="inline-block -translate-y-0.5 ml-1 group-hover:translate-x-1 transition-transform" />
+          </a>
+        </motion.div>
+        
+        {/* Social Proof Tiles */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto"
+        >
+          {trustTiles.map((tile) => (
+            <div key={tile.label} className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-4 text-center">
+              <div className="font-display text-2xl md:text-3xl font-bold text-green-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                {tile.value}
+              </div>
+              <div className="text-sm text-gray-400">{tile.label}</div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+const WorkPage = ({ setPage }) => {
+  const [filters, setFilters] = useState({
+    industry: 'all',
+    services: 'all',
+    year: 'all',
+    search: '',
+  });
+
+  const filteredCases = useMemo(() => {
+    return MOCK_CASE_STUDIES.filter(c => {
+      const searchMatch = c.title.toLowerCase().includes(filters.search.toLowerCase()) || 
+                          c.client.toLowerCase().includes(filters.search.toLowerCase());
+      const industryMatch = filters.industry === 'all' || c.industry === filters.industry;
+      const serviceMatch = filters.services === 'all' || c.services.includes(filters.services);
+      const yearMatch = filters.year === 'all' || c.year.toString() === filters.year;
+      
+      return searchMatch && industryMatch && serviceMatch && yearMatch;
+    });
+  }, [filters]);
+
+  return (
+    <div className="min-h-screen pt-16 text-white">
+      <FilterBar 
+        filters={MOCK_FILTERS} 
+        activeFilters={filters} 
+        setFilters={setFilters} 
+      />
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+        <AnimatePresence>
+          <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {filteredCases.length > 0 ? (
+              filteredCases.map(caseStudy => (
+                <CaseCard 
+                  key={caseStudy.id} 
+                  caseStudy={caseStudy} 
+                  setPage={setPage} 
+                />
+              ))
+            ) : (
+              <motion.div 
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="col-span-full text-center py-16"
+              >
+                <h3 className="text-2xl font-bold text-white mb-2">No projects found</h3>
+                <p className="text-gray-400 mb-4">Try adjusting your filters or search terms.</p>
+                <button
+                  onClick={() => setFilters({ industry: 'all', services: 'all', year: 'all', search: '' })}
+                  className="px-6 py-2 font-semibold text-black bg-white rounded-full text-md hover:bg-gray-200 transition-colors duration-300"
+                >
+                  Reset Filters
+                </button>
+              </motion.div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+    </div>
+  );
+};
+
+const CaseStudyPage = ({ setPage, caseId }) => {
+  const navigate = (e, page) => {
+    e.preventDefault();
+    setPage(page);
+  };
+  
+  const caseStudy = MOCK_CASE_STUDIES.find(c => c.id === caseId);
+
+  if (!caseStudy) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white pt-16">
+        <h1 className="text-2xl">Case Study Not Found</h1>
+        <a href="/work" onClick={(e) => navigate(e, '/work')} className="ml-4 text-blue-400">
+          Back to Work
+        </a>
+      </div>
+    );
+  }
+
+  // Find next/prev
+  const currentIndex = MOCK_CASE_STUDIES.findIndex(c => c.id === caseId);
+  const prevCase = MOCK_CASE_STUDIES[currentIndex - 1];
+  const nextCase = MOCK_CASE_STUDIES[currentIndex + 1];
+
+  return (
+    <div className="min-h-screen text-white pt-16">
+      {/* 1. Hero */}
+      <div className="relative h-[70vh] flex items-center justify-center">
+        <img 
+          src={caseStudy.coverImage.replace('400', '800')} 
+          alt={caseStudy.title}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 text-center p-6">
+          <h2 className="text-lg font-semibold text-gray-300">{caseStudy.client}</h2>
+          <h1 className="font-display text-4xl md:text-6xl font-bold text-white mt-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            {caseStudy.title}
+          </h1>
+          <p className="text-2xl font-bold text-green-400 mt-4">{caseStudy.summary}</p>
+        </div>
+      </div>
+      
+      {/* 2. Stats Bar */}
+      <div className="bg-gray-900 border-y border-gray-800">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-center py-8 px-6">
+          {/* Mock stats */}
+          <div className="border-r border-gray-700 last:border-r-0">
+            <div className="text-3xl font-bold text-green-400">+3.5x</div>
+            <div className="text-sm text-gray-400">ROAS</div>
+          </div>
+          <div className="border-r border-gray-700 last:border-r-0">
+            <div className="text-3xl font-bold text-green-400">98%</div>
+            <div className="text-sm text-gray-400">CSAT</div>
+          </div>
+          <div className="border-r border-gray-700 last:border-r-0">
+            <div className="text-3xl font-bold text-green-400">24/7</div>
+            <div className="text-sm text-gray-400">AI Support</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-green-400">+32%</div>
+            <div className="text-sm text-gray-400">Conversion</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Content Sections */}
+      <div className="max-w-3xl mx-auto px-6 py-16 space-y-12">
+        <div className="prose prose-invert lg:prose-xl prose-p:text-gray-300 prose-headings:text-white prose-headings:font-display">
+          <section>
+            <h2>The Challenge</h2>
+            <p>A detailed description of the business problem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+          </section>
+          <section>
+            <h2>Insight & Strategy</h2>
+            <p>Our analysis and strategic approach. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat.</p>
+          </section>
+          <section>
+            <h2>Solution</h2>
+            <p>How My Souk’s AI agents and automations solved the problem. Duis ac turpis. Integer rutrum ante eu lacus. Quisque nulla. Vestibulum libero nisl, porta vel, scelerisque eget, malesuada at, neque.</p>
+            <ul>
+              <li>Autonomous AI agent deployment</li>
+              <li>WhatsApp & Telegram integration</li>
+              <li>Real-time Google Sheets sync</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Results</h2>
+            <p>The final metrics and outcomes. Vivamus eget nibh. Etiam cursus leo vel metus. Nulla facilisi. Aenean nec eros. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Suspendisse sollicitudin velit sed leo.</p>
+          </section>
+        </div>
+
+        {/* 4. Testimonial */}
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
+          <p className="text-2xl font-medium text-white italic">"My Souk's AI agents transformed our customer service overnight. We've never seen results like this."</p>
+          <p className="mt-4 font-semibold text-green-400">Client Name</p>
+          <p className="text-sm text-gray-400">CEO, {caseStudy.client}</p>
+        </div>
+      </div>
+
+      {/* 5. Next/Prev Nav */}
+      <div className="border-t border-gray-800 grid grid-cols-1 md:grid-cols-2">
+        {prevCase ? (
+          <a
+            href={`/work/${prevCase.id}`}
+            onClick={(e) => navigate(e, `/work/${prevCase.id}`)}
+            className="group relative p-8 text-left border-r border-gray-800"
+          >
+            <span className="block text-sm text-gray-400 mb-1">Previous</span>
+            <span className="block text-xl font-bold text-white group-hover:text-green-400 transition-colors">
+              {prevCase.title}
+            </span>
+          </a>
+        ) : <div />}
+        {nextCase ? (
+          <a
+            href={`/work/${nextCase.id}`}
+            onClick={(e) => navigate(e, `/work/${nextCase.id}`)}
+            className="group relative p-8 text-right"
+          >
+            <span className="block text-sm text-gray-400 mb-1">Next</span>
+            <span className="block text-xl font-bold text-white group-hover:text-green-400 transition-colors">
+              {nextCase.title}
+            </span>
+          </a>
+        ) : <div />}
+      </div>
+       <div className="text-center py-8 border-t border-gray-800">
+          <a
+            href="/work"
+            onClick={(e) => navigate(e, '/work')}
+            className="font-semibold text-white hover:text-green-400 transition-colors"
+          >
+            Back to All Work
+          </a>
         </div>
     </div>
+  );
+};
 
-    <!-- Sound Toggle -->
-    <div class="sound-toggle" id="sound-toggle">
-        <i class="fas fa-volume-up"></i>
+// --- 6. MAIN APP ---
+
+const App = () => {
+  // Simple router
+  const [page, setPage] = useState('/');
+
+  // Page component renderer
+  const renderPage = () => {
+    if (page.startsWith('/work/')) {
+      const caseId = page.split('/')[2];
+      return <CaseStudyPage setPage={setPage} caseId={caseId} />;
+    }
+    
+    switch (page) {
+      case '/':
+        return <HomePage setPage={setPage} />;
+      case '/work':
+        return <WorkPage setPage={setPage} />;
+      case '/about':
+      case '/services':
+      case '/thinking':
+      case '/careers':
+      case '/contact':
+        return <div className="min-h-screen flex items-center justify-center text-white pt-16"><h1 className="text-4xl font-bold">{page.substring(1)} Page (Coming Soon)</h1></div>;
+      default:
+        // Fallback to home page for any unknown route
+        return <HomePage setPage={N} />;
+    }
+  };
+
+  // Handle browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      // Set page based on location pathname, fallback to '/'
+      setPage(window.location.pathname || '/');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []); // Empty dependency array, runs once
+
+  // Update URL on page change (simulating Next.js router)
+  /*
+  useEffect(() => {
+    // This causes a SecurityError in the sandboxed preview environment.
+    // Commenting out for compatibility.
+    if (window.history.pushState) { // Add check before calling
+      window.history.pushState({}, '', page);
+    }
+  }, [page]);
+  */
+ 
+  // Add a fallback for the default case in renderPage
+  const DefaultPage = () => <HomePage setPage={setPage} />;
+
+  const renderPageImproved = () => {
+    if (page.startsWith('/work/')) {
+      const caseId = page.split('/')[2];
+      return <CaseStudyPage setPage={setPage} caseId={caseId} />;
+    }
+    
+    switch (page) {
+      case '/':
+        return <HomePage setPage={setPage} />;
+      case '/work':
+        return <WorkPage setPage={setPage} />;
+      case '/about':
+      case '/services':
+      case '/thinking':
+      case '/careers':
+      case '/contact':
+        return <div className="min-h-screen flex items-center justify-center text-white pt-16"><h1 className="text-4xl font-bold">{page.substring(1)} Page (Coming Soon)</h1></div>;
+      default:
+        // Better fallback
+        return <DefaultPage />;
+    }
+  };
+
+
+  return (
+    <div className="bg-gray-950 min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+          .font-display { font-family: 'Space Grotesk', sans-serif; }
+          .line-clamp-2 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+          }
+          /* Custom prose styles for case study */
+          .prose-invert h2 {
+            font-size: 1.875rem; /* 30px */
+            line-height: 2.25rem; /* 36px */
+            font-weight: 700;
+            margin-bottom: 1.5em;
+          }
+          .prose-invert p, .prose-invert li {
+            font-size: 1.125rem; /* 18px */
+            line-height: 1.777; /* 32px */
+            color: #d1d5db; /* gray-300 */
+          }
+        `}
+      </style>
+      
+      <ParticleBackground />
+      <Header setPage={setPage} />
+      
+      <main className="relative z-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={page}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderPageImproved()}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+      
+      <Footer setPage={setPage} />
     </div>
+  );
+};
 
-    <!-- Scripts -->
-    <script>
-        // Particle Animation (from original code)
-        function createParticles() {
-            const container = document.getElementById('particles');
-            if (!container) return;
-            const particleCount = 50;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                
-                const x = Math.random() * 100;
-                const delay = Math.random() * 5;
-                const size = Math.random() * 3 + 1;
-                const duration = Math.random() * 10 + 10;
-                
-                particle.style.left = `${x}%`;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.animationDuration = `${duration}s`;
-                particle.style.animationDelay = `${delay}s`;
-                
-                const colors = ['#00d4ff', '#8b5cf6', '#10b981'];
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.background = color;
-                particle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
-                
-                container.appendChild(particle);
-            }
-        }
-
-        // AI Network Animation (from original code)
-        function initNetwork() {
-            const canvas = document.getElementById('network');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            const nodes = [];
-            const nodeCount = 50;
-            const connectionDistance = 150;
-            
-            for (let i = 0; i < nodeCount; i++) {
-                nodes.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: Math.random() * 2 + 1,
-                    vx: Math.random() * 1 - 0.5,
-                    vy: Math.random() * 1 - 0.5,
-                    color: i % 5 === 0 ? '#00d4ff' : i % 7 === 0 ? '#8b5cf6' : '#10b981'
-                });
-            }
-            
-            function animate() {
-                requestAnimationFrame(animate);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                for (let i = 0; i < nodes.length; i++) {
-                    const node = nodes[i];
-                    
-                    node.x += node.vx;
-                    node.y += node.vy;
-                    
-                    if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
-                    if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
-                    
-                    ctx.beginPath();
-                    ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = node.color;
-                    ctx.fill();
-                    
-                    for (let j = i + 1; j < nodes.length; j++) {
-                        const node2 = nodes[j];
-                        const dx = node.x - node2.x;
-                        const dy = node.y - node2.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        
-                        if (distance < connectionDistance) {
-                            ctx.beginPath();
-                            ctx.moveTo(node.x, node.y);
-                            ctx.lineTo(node2.x, node2.y);
-                            ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * (1 - distance / connectionDistance)})`;
-                            ctx.lineWidth = 0.5;
-                            ctx.stroke();
-                        }
-                    }
-                }
-            }
-            
-            animate();
-            
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
-        }
-
-        // Terminal Typing Effect (from original code)
-        function typeText() {
-            const text = "Transforming local businesses with autonomous AI agents";
-            const typingText = document.getElementById('typing-text');
-            if (!typingText) return; // Only run if on home page
-            
-            let i = 0;
-            typingText.textContent = '';
-            
-            function runTyping() {
-                if (i < text.length) {
-                    typingText.textContent += text.charAt(i);
-                    i++;
-                    
-                    if (soundEnabled && i % 3 === 0) {
-                        playSound('type');
-                    }
-                    setTimeout(runTyping, 50);
-                } else {
-                    setTimeout(() => {
-                        i = 0;
-                        typingText.textContent = '';
-                        runTyping(); // Loop
-                    }, 5000);
-                }
-            }
-            runTyping();
-        }
-
-        // Sound Effects (from original code, with context)
-        let soundEnabled = true;
-        let audioContext;
-        const soundBuffers = {};
-
-        // Use a generic silent audio data URL to unlock audio on user gesture
-        const silentAudio = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=';
-
-        function initAudio() {
-            if (audioContext) return;
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                // Play a silent sound on the first user interaction
-                const firstInteraction = () => {
-                    const source = audioContext.createBufferSource();
-                    source.buffer = audioContext.createBuffer(1, 1, 22050);
-                    source.connect(audioContext.destination);
-                    source.start(0);
-                    document.removeEventListener('click', firstInteraction);
-                    document.removeEventListener('touchstart', firstInteraction);
-                };
-                document.addEventListener('click', firstInteraction);
-                document.addEventListener('touchstart', firstInteraction);
-
-                // Preload sounds
-                loadSound('hover', silentAudio);
-                loadSound('click', silentAudio);
-                loadSound('type', silentAudio);
-            } catch (e) {
-                console.error("Web Audio API is not supported in this browser");
-            }
-        }
-        
-        async function loadSound(name, url) {
-            if (!audioContext) return;
-            try {
-                const response = await fetch(url);
-                const arrayBuffer = await response.arrayBuffer();
-                audioContext.decodeAudioData(arrayBuffer, (buffer) => {
-                    soundBuffers[name] = buffer;
-                }, (e) => console.error('Error decoding audio data', e));
-            } catch(e) {
-                console.error('Error fetching audio', e);
-            }
-        }
-        
-        function playSound(type) {
-            if (soundEnabled && audioContext && soundBuffers[type]) {
-                const source = audioContext.createBufferSource();
-                source.buffer = soundBuffers[type];
-                source.connect(audioContext.destination);
-                source.start(0);
-            }
-        }
-
-        // Sound toggle
-        const soundToggle = document.getElementById('sound-toggle');
-        if (soundToggle) {
-            soundToggle.addEventListener('click', () => {
-                soundEnabled = !soundEnabled;
-                soundToggle.innerHTML = soundEnabled ? 
-                    '<i class="fas fa-volume-up"></i>' : 
-                    '<i class="fas fa-volume-mute"></i>';
-                if (soundEnabled && !audioContext) {
-                    initAudio();
-                }
-            });
-        }
-        
-        // Custom Message Box (replaces alert)
-        const messageOverlay = document.getElementById('message-overlay');
-        const messageText = document.getElementById('message-text');
-        const messageClose = document.getElementById('message-close');
-
-        function showMessage(text) {
-            if (messageText) messageText.textContent = text;
-            if (messageOverlay) messageOverlay.classList.add('visible');
-        }
-
-        if (messageClose) {
-            messageClose.addEventListener('click', () => {
-                if (messageOverlay) messageOverlay.classList.remove('visible');
-            });
-        }
-        
-        // Form submission (from original, modified for message box)
-        const contactForm = document.getElementById('contact-form');
-        if (contactForm) {
-            contactForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const businessName = e.target.elements.businessName.value;
-                const email = e.target.elements.email.value;
-                const phoneNumber = e.target.elements.phone.value;
-                
-                console.log(`Sending data to backend: Name: ${businessName}, Email: ${email}, Phone: ${phoneNumber}`);
-                console.log('Backend will update Google Sheet with lead information');
-                console.log('Backend will send direct Telegram alert to admin ID: anirudhjindal');
-                
-                showMessage(`Thank you, ${businessName}! Your information has been received. Our team will contact you shortly.`);
-                e.target.reset();
-            });
-        }
-
-        // Initialize everything
-        window.addEventListener('load', () => {
-            // NEW: Page Navigation Logic
-            const navLinks = document.querySelectorAll('.nav-link');
-            const pages = document.querySelectorAll('.page');
-
-            function navigateTo(pageId) {
-                // Hide all pages
-                pages.forEach(page => page.classList.remove('active'));
-                
-                // Show the target page
-                const targetPage = document.getElementById(pageId);
-                if (targetPage) {
-                    targetPage.classList.add('active');
-                }
-                
-                // Update active state in nav
-                navLinks.forEach(link => {
-                    if (link.dataset.page === pageId) {
-                        link.classList.add('active');
-                    } else {
-                        link.classList.remove('active');
-                    }
-                });
-
-                // Scroll to top of new page
-                window.scrollTo(0, 0);
-            }
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const pageId = link.dataset.page;
-                    navigateTo(pageId);
-                    
-                    // Update URL hash for history
-                    history.pushState(null, '', `#${pageId}`);
-                });
-            });
-
-            // Handle browser back/forward
-            window.addEventListener('popstate', () => {
-                const pageId = window.location.hash.substring(1) || 'home';
-                navigateTo(pageId);
-            });
-
-            // Handle initial page load
-            const initialPageId = window.location.hash.substring(1) || 'home';
-            navigateTo(initialPageId);
-
-
-            // Original initializations
-            createParticles();
-            initNetwork();
-            typeText();
-            initAudio(); // Init audio on load
-            
-            // Add sound effects to elements
-            document.querySelectorAll('[data-sound="hover"]').forEach(el => {
-                el.addEventListener('mouseenter', () => playSound('hover'));
-            });
-
-            document.querySelectorAll('[data-sound="click"]').forEach(el => {
-                el.addEventListener('click', () => playSound('click'));
-            });
-            
-            // Scroll reveal animation (from original)
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = 1;
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, { threshold: 0.1 });
-            
-            document.querySelectorAll('.feature-card, .section-title, .hero-subtitle, .content-section p').forEach(el => {
-                el.style.opacity = 0;
-                el.style.transform = 'translateY(20px)';
-                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                observer.observe(el);
-            });
-        });
-    </script>
-</body>
-</html>
+export default App;
